@@ -1,10 +1,16 @@
 require('dotenv').config()
 const express = require('express')
 const app = express()
+const cors = require('cors');
 const port = process.env.PORT || 8080
 const bodyParser = require('body-parser');
 
+app.use(cors({
+    origin: '*',
+}));
+
 app.use(bodyParser.urlencoded({ extended: false}));
+
 app.use(bodyParser.json());
 
 const corsHeaders = {
@@ -17,7 +23,9 @@ app.get('/', (req, res) => {
     res.send("SD Lives API Consumer Mercado Pago, please send a Post or Get Request.\n Get:/:id_pix \n Post:/:x_idempotency_key")
 })
 
-app.get('/:id_pix', async (req, res) => {
+app.get('/:id_pix', cors({
+    allowedHeaders: ['Authorization']
+}) ,async (req, res) => {
     const id_pix = req?.params?.id_pix ;
 
     const response = await fetch(`https://api.mercadopago.com/v1/payments/${id_pix}`, {
@@ -31,7 +39,9 @@ app.get('/:id_pix', async (req, res) => {
     //console.log(corsHeaders, '\n', id_pix)
 })
 
-app.post('/:x_idempotency_key', async (req, res) => {
+app.post('/:x_idempotency_key', cors({
+    allowedHeaders: ['Authorization', 'X-Idempotency-Key', 'Content-Type']
+}), async (req, res) => {
 
     console.log(req.params,"\n", req.body);
 
@@ -140,5 +150,5 @@ app.post('/:x_idempotency_key', async (req, res) => {
 */
 
 app.listen(port, () => {
-  console.log(`Example app listening on http://localhost:${port}/`)
+  console.log(`App listening on http://localhost:${port}/`)
 })
